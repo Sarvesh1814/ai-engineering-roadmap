@@ -1,5 +1,5 @@
 import yaml
-
+import os
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from dotenv  import load_dotenv
@@ -21,7 +21,7 @@ def get_llm():
         return ChatOllama(
             model=MODEL_NAME,
             base_url=BASE_URL,
-            temperature=llm_config["temperature"],
+            temperature=TEMPERATURE,
         )
 
     elif provider == "openai":
