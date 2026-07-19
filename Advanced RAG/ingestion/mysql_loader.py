@@ -3,6 +3,7 @@
 import os
 from sqlalchemy import create_engine
 from dotenv  import load_dotenv
+import pandas as pd
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -11,7 +12,9 @@ DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
 DB_HOST = os.getenv("MYSQL_HOST")
 DB_PORT = os.getenv("MYSQL_PORT")
 DB_NAME = os.getenv("MYSQL_DATABASE")
-VIEW_NAME = os.getenv("MYSQL_VIEW_NAME")  # This can be a table or view name in your MySQL database
+
+## This can be a table or view name in your MySQL database
+VIEW_NAME = os.getenv("MYSQL_VIEW_NAME")  
 
 # Construct the database URL for SQLAlchemy
 DATABASE_URL = (
