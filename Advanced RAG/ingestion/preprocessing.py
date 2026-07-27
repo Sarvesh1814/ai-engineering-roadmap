@@ -54,3 +54,4 @@ class TicketCleaner:
 
         response = self.chain.invoke({"input": comment_text})
         return response.content.strip()
+    
