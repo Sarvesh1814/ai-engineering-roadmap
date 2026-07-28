@@ -21,7 +21,7 @@ class TicketCleaner:
     def _load_prompt() -> ChatPromptTemplate:
         """Load the cleaning prompt from the YAML file."""
 
-        project_root = Path(__file__).resolve().parents[2]
+        project_root = Path(__file__).resolve().parents[1]
         prompt_path = project_root / "prompts" / "TicketCleaningPrompt.yaml"
 
         if not prompt_path.exists():
