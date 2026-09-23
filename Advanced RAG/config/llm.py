@@ -1,36 +1,27 @@
-import yaml
-import os
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
-from dotenv  import load_dotenv
 
-# Load environment variables from a .env file
-load_dotenv()
+from config.settings import get_settings
 
-LLM_PROVIDER = os.getenv("LLM_PROVIDER")
-MODEL_NAME = os.getenv("MODEL_NAME")
-BASE_URL = os.getenv("BASE_URL")
-API_KEY = os.getenv("API_KEY")
-TEMPERATURE = float(os.getenv("CTEMPERATURE", 0.1))  # Default to 0.1 if not set
+
 def get_llm():
+    settings = get_settings()
 
-    provider = LLM_PROVIDER
+    provider = settings.llm_provider
 
     if provider == "ollama":
-
         return ChatOllama(
-            model=MODEL_NAME,
-            base_url=BASE_URL,
-            temperature=TEMPERATURE,
+            model=settings.llm_model_name,
+            base_url=settings.llm_base_url,
+            temperature=settings.llm_temperature,
         )
 
     elif provider == "openai":
-
         return ChatOpenAI(
-            model=MODEL_NAME,
-            base_url=BASE_URL,
-            api_key=API_KEY,
-            temperature=TEMPERATURE
+            model=settings.llm_model_name,
+            base_url=settings.llm_base_url,
+            api_key=settings.llm_api_key,
+            temperature=settings.llm_temperature,
         )
 
     else:

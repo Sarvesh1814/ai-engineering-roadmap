@@ -1,0 +1,72 @@
+[
+  {
+    "query": "Migration fails with TF51535 error when Custom.SourceWorkItemID field cannot be found",
+    "expected_ticket_ids": ["INC0012345", "INC0015678"],
+    "expected_entities": ["TF51535", "Custom.SourceWorkItemID", "Azure DevOps"],
+    "expected_resolution_keywords": ["target project", "custom field", "field configuration", "migration configuration"],
+    "category": "migration"
+  },
+  {
+    "query": "Azure DevOps work item migration failing due to missing field reference",
+    "expected_ticket_ids": ["INC0012345", "INC0019988"],
+    "expected_entities": ["Azure DevOps", "work item", "field reference"],
+    "expected_resolution_keywords": ["verify field exists", "target project", "field mapping"],
+    "category": "migration"
+  },
+  {
+    "query": "Database connection timeout when connecting to SQL Server",
+    "expected_ticket_ids": ["INC0023456", "INC0027890"],
+    "expected_entities": ["SQL Server", "connection timeout", "database"],
+    "expected_resolution_keywords": ["connection string", "firewall", "network", "timeout"],
+    "category": "database"
+  },
+  {
+    "query": "SSL certificate validation error on API calls",
+    "expected_ticket_ids": ["INC0034567", "INC0038901"],
+    "expected_entities": ["SSL", "certificate", "API", "validation"],
+    "expected_resolution_keywords": ["certificate chain", "trust store", "CA bundle", "verify SSL"],
+    "category": "security"
+  },
+  {
+    "query": "Authentication failed with OAuth token expired error",
+    "expected_ticket_ids": ["INC0045678", "INC0049012"],
+    "expected_entities": ["OAuth", "token", "authentication", "expired"],
+    "expected_resolution_keywords": ["refresh token", "token expiration", "re-authenticate", "client credentials"],
+    "category": "authentication"
+  },
+  {
+    "query": "Memory leak in application causing OOM kills",
+    "expected_ticket_ids": ["INC0056789", "INC0050123"],
+    "expected_entities": ["memory leak", "OOM", "out of memory", "garbage collection"],
+    "expected_resolution_keywords": ["heap dump", "profiler", "object retention", "memory profiling"],
+    "category": "performance"
+  },
+  {
+    "query": "Kubernetes pod stuck in CrashLoopBackOff state",
+    "expected_ticket_ids": ["INC0067890", "INC0061234"],
+    "expected_entities": ["Kubernetes", "CrashLoopBackOff", "pod", "container"],
+    "expected_resolution_keywords": ["logs", "exit code", "readiness probe", "liveness probe", "resource limits"],
+    "category": "kubernetes"
+  },
+  {
+    "query": "Redis connection pool exhausted under high load",
+    "expected_ticket_ids": ["INC0078901", "INC0072345"],
+    "expected_entities": ["Redis", "connection pool", "exhausted", "high load"],
+    "expected_resolution_keywords": ["max connections", "pool size", "timeout", "pipeline", "cluster mode"],
+    "category": "database"
+  },
+  {
+    "query": "File upload fails with 413 Request Entity Too Large",
+    "expected_ticket_ids": ["INC0089012", "INC0083456"],
+    "expected_entities": ["413", "file upload", "request entity too large", "nginx"],
+    "expected_resolution_keywords": ["client_max_body_size", "nginx config", "proxy buffer", "upload limit"],
+    "category": "web"
+  },
+  {
+    "query": "CI/CD pipeline fails on Docker build step with COPY failed",
+    "expected_ticket_ids": ["INC0090123", "INC0094567"],
+    "expected_entities": ["Docker", "CI/CD", "COPY failed", "build"],
+    "expected_resolution_keywords": [".dockerignore", "build context", "file permissions", "path"],
+    "category": "devops"
+  }
+]

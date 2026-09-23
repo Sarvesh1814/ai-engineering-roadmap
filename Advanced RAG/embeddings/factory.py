@@ -1,26 +1,14 @@
 from embeddings.bge import BGEEmbedding
+from embeddings.base import EmbeddingModel
+
+from config.settings import get_settings
 
 
-def get_embedding_model(model_name: str):
+def get_embedding_model(model_name: str | None = None) -> EmbeddingModel:
+    settings = get_settings()
+    name = (model_name or settings.embedding_model).strip()
 
-    # As of now, we only support BGE embeddings. You can add more embedding models in the future.
+    if name.lower().startswith("baai/bge"):
+        return BGEEmbedding(model_name=name)
 
-    model_name = model_name.strip()
-
-    # Supports all BAAI BGE models
-    if model_name.lower().startswith("baai/bge"):
-        return BGEEmbedding(model_name=model_name)
-
-    """
-    # For future use, you can add more embedding models here.    
-    if model_name == "openai":
-    return OpenAIEmbedding()
-
-    if model_name == "voyage":
-        return VoyageEmbedding()
-
-    if model_name == "jina":
-        return JinaEmbedding()
-    
-    """
-    raise ValueError(f"Unsupported embedding model: {model_name}")
+    raise ValueError(f"Unsupported embedding model: {name}")
