@@ -1,80 +1,212 @@
-# Advanced RAG Pipeline
+# Advanced RAG
 
-A practical Retrieval-Augmented Generation (RAG) project designed to ingest, clean, and prepare ticket-like data for downstream vector search and semantic retrieval.
+Agentic ticket resolution with a retrieval-augmented knowledge base built from solved ServiceNow-style issues.
 
 ## Overview
 
-This project demonstrates an end-to-end RAG workflow using:
+This project turns historical, solved support tickets into a searchable evidence store that can help answer new incidents using grounded retrieval and LLM-based reasoning.
 
-- Python for orchestration
-- LangChain for LLM prompt chaining
-- Ollama or OpenAI for text cleaning and reasoning
-- Qdrant for vector storage and similarity search
-- MySQL and SQLAlchemy for data ingestion
+At a high level, the system:
 
-The main goal is to take raw support or service data, clean it with an LLM, and make it ready for retrieval-based applications.
+- loads solved ticket data from MySQL
+- extracts structured knowledge from ticket text with an LLM
+- chunks and embeds ticket content for semantic search
+- stores vectors in Qdrant
+- retrieves the most relevant historical tickets for a new query
+- reranks evidence and generates a grounded resolution
+- exposes the resolver through a FastAPI endpoint
 
-## What the project does
+This is not a generic chatbot. It is designed around ticket resolution workflows, where the answer must be supported by historical evidence and relevant ticket IDs.
 
-1. Loads data from a MySQL view
-2. Passes ticket comments through an LLM-based cleaning pipeline
-3. Configures the LLM provider using environment variables
-4. Prepares the data for embedding and vector storage
-5. Supports integration with a Qdrant vector database
+## Key capabilities
 
-## Project structure
+- Incremental ingestion of updated tickets
+- Structured extraction of problem, root cause, resolution, and next steps
+- Ticket-aware chunking that preserves ticket context
+- Dense vector search with Qdrant
+- Hybrid retrieval with sparse and dense signals
+- Reranking of retrieved evidence
+- Confidence-based generation and fallback
+- REST API for ticket resolution queries
+- Metrics and logging for ingestion and resolution flow
 
-- config/ - LLM configuration and environment-based setup
-- embeddings/ - embedding model abstractions and factory logic
-- ingestion/ - data loading and preprocessing pipelines
-- prompts/ - prompt templates used for ticket cleaning
-- vectorstore/ - Qdrant connection and collection management
-- requirements.txt - Python dependencies
+## Architecture at a glance
+
+```text
+ServiceNow / MySQL View
+        │
+        ▼
+Ticket Loader
+        │
+        ▼
+LLM Knowledge Extraction
+        │
+        ▼
+Ticket-Aware Chunking
+        │
+        ▼
+Embeddings + Qdrant Index
+        │
+        ▼
+Hybrid Retrieval + Rerank
+        │
+        ▼
+Resolver Agent
+        │
+        ▼
+Grounded Solution + Relevant Ticket IDs
+```
+
+## Repository structure
+
+- `api/` — FastAPI routes and request/response schemas
+- `config/` — settings, logging, metrics, and LLM configuration
+- `embeddings/` — embedding model factory and provider integrations
+- `ingestion/` — MySQL ticket loading, cleaning, and chunking pipeline
+- `retrieval/` — dense, sparse, hybrid, and reranking logic
+- `resolver/` — LangGraph-based resolver workflow and state
+- `vectorstore/` — Qdrant integration
+- `scripts/` — operational utilities for data access and evaluation
+- `evaluation/` — retriever and response evaluation utilities
+- `main.py` — FastAPI app bootstrap
+- `requirements.txt` — Python dependencies
 
 ## Tech stack
 
-- Python
-- LangChain
-- LangGraph
-- SQLAlchemy
+- Python 3.10+
+- FastAPI
+- LangChain / LangGraph
+- Qdrant
+- MySQL / SQLAlchemy / PyMySQL
 - pandas
-- PyYAML
-- Qdrant Client
-- Sentence Transformers
-- PyMySQL
-- dotenv
+- SentenceTransformers / BGE embeddings
+- Prometheus metrics
+- dotenv / PyYAML
 
-## Setup
+## Configuration
 
-1. Create and activate a Python environment
+Project configuration is centered in `config/settings.yaml` and environment variables override the defaults.
+
+Common settings include:
+
+- MySQL host, database, view name, batch size
+- Qdrant host, port, collection name, vector size
+- embedding provider/model
+- LLM provider/model/base URL/API key
+- retrieval top-k settings and reranker settings
+
+Typical environment variables used by the app:
+
+```bash
+MYSQL_PASSWORD=...
+API_KEY=...
+```
+
+If you want to customize the defaults, edit `config/settings.yaml` before running the project.
+
+## Environment setup
+
+1. Create a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
 2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Configure environment variables in a .env file for:
-   - LLM provider
-   - model name
-   - base URL
-   - API key (if needed)
-   - MySQL connection details
+3. Configure `.env` or the YAML settings for your environment.
 
-4. Run the ingestion flow:
+Example `.env`:
+
+```bash
+MYSQL_PASSWORD=your_mysql_password
+API_KEY=your_llm_api_key
+```
+
+## Running ingestion
+
+The ingestion pipeline reads ticket records and builds the vector knowledge base.
 
 ```bash
 python ingestion/ingestion.py
 ```
 
+This loads solved tickets, extracts structured knowledge, generates embeddings, and upserts the results into Qdrant.
+
+## Running the API
+
+Start the FastAPI app:
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The app exposes:
+
+- `POST /api/v1/resolve`
+- `POST /api/v1/resolve/stream`
+- `GET /health` and metrics at `/metrics`
+
+Example request:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/resolve" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "problem": "Azure DevOps migration is failing because the custom field cannot be found."
+  }'
+```
+
+## Expected behavior
+
+The resolver tries to:
+
+1. understand the user problem
+2. retrieve the most relevant historical tickets
+3. rerank those candidates using stronger evidence signals
+4. build a grounded evidence summary
+5. generate a resolution with relevant ticket IDs and next steps
+6. return a low-confidence or no-solution result when the evidence is insufficient
+
+This means the system is intentionally conservative: it prefers evidence-backed answers over guesses.
+
+## Operational notes
+
+- Incremental ingestion is enabled by default for efficient reprocessing.
+- Checkpoint and failure logging are managed in config values such as `.ingestion_checkpoint` and `.ingestion_failures.jsonl`.
+- The system is designed to be used with a real MySQL source and an embedding/LLM backend that supports reproducible retrieval and generation.
+
+## Practical use case
+
+The project is well suited for support-heavy environments where:
+
+- historical solved tickets contain valuable fixes
+- ticket resolution should be evidence-based
+- support agents need relevant prior incidents and proven next steps
+- knowledge should be reusable beyond single-ticket search
+
 ## Notes
 
-This repository is a learning-oriented implementation of an Advanced RAG workflow. It focuses on building the core pipeline rather than offering a fully production-ready product.
+This repository is a practical starter implementation of an agentic advanced RAG pipeline. It focuses on real workflow integration, retrieval quality, and grounded answer generation rather than a toy demo-only app.
 
-## Future direction
+## Next steps
 
 Possible extensions include:
 
-- embedding generation and indexing
-- semantic search over cleaned ticket data
-- evaluation of retrieval quality
-- integration with a full RAG chat application
+- deeper evaluation and benchmarking of retrieval quality
+- online feedback loops for user-accepted resolutions
+- improved reranking policy and hybrid retrieval tuning
+- ServiceNow-native integration for automated ticket recommendation
+- analytics dashboards for resolution confidence and solution quality
