@@ -70,7 +70,8 @@ class Settings:
     mysql_database: str = "servicenow"
     mysql_user: str = "rag_user"
     mysql_password: str = ""
-    mysql_view: str = "solved_ticket_view"
+    mysql_ingestion_view: str = "vw_ops_workitem_ingestion"
+    mysql_resolver_view: str = "vw_ops_workitem_flat"
     mysql_batch_size: int = 1000
 
     qdrant_host: str = "localhost"
@@ -122,7 +123,8 @@ class Settings:
         self.mysql_database = mysql.get("database", self.mysql_database)
         self.mysql_user = mysql.get("user", self.mysql_user)
         self.mysql_password = mysql.get("password", self.mysql_password) or os.getenv("MYSQL_PASSWORD", "")
-        self.mysql_view = mysql.get("view", self.mysql_view)
+        self.mysql_ingestion_view = mysql.get("ingestion_view", self.mysql_ingestion_view)
+        self.mysql_resolver_view = mysql.get("resolver_view", self.mysql_resolver_view)
         self.mysql_batch_size = mysql.get("batch_size", self.mysql_batch_size)
 
         qdrant = config.get("qdrant", {})

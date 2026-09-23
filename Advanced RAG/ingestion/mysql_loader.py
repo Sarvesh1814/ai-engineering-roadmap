@@ -34,7 +34,7 @@ def get_engine():
 
 def load_view(view_name: str | None = None, chunk_size: int | None = None):
     settings = get_settings()
-    view = _validate_identifier(view_name or settings.mysql_view)
+    view = _validate_identifier(view_name or settings.mysql_ingestion_view)
     size = chunk_size or settings.mysql_batch_size
 
     query = f"SELECT * FROM `{view}`"
@@ -64,7 +64,7 @@ def _get_timestamp_column(engine, view: str) -> str:
 def get_max_updated_at(view_name: str | None = None) -> str | None:
     """Get the maximum updated timestamp from the view for checkpointing."""
     settings = get_settings()
-    view = _validate_identifier(view_name or settings.mysql_view)
+    view = _validate_identifier(view_name or settings.mysql_ingestion_view)
     engine = get_engine()
     ts_col = _get_timestamp_column(engine, view)
 
@@ -81,7 +81,7 @@ def load_view_incremental(
 ):
     """Load only records updated since the given timestamp."""
     settings = get_settings()
-    view = _validate_identifier(view_name or settings.mysql_view)
+    view = _validate_identifier(view_name or settings.mysql_ingestion_view)
     size = chunk_size or settings.mysql_batch_size
 
     engine = get_engine()

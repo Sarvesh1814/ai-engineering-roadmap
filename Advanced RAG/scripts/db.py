@@ -21,7 +21,7 @@ def get_engine():
 def fetch_tickets_to_resolve(view_name: str | None = None) -> list[dict[str, Any]]:
     """Fetch tickets where hasUpdates = 'Yes' from the configured view."""
     settings = get_settings()
-    view = view_name or settings.mysql_view
+    view = view_name or settings.mysql_resolver_view
     logger = get_logger("polling.db")
     engine = get_engine()
 

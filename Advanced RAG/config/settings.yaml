@@ -8,7 +8,8 @@ mysql:
   database: servicenow
   user: root
   password: ""  # Set via MYSQL_PASSWORD env var
-  view: vw_ops_workitem_full
+  ingestion_view: vw_ops_workitem_ingestion  # Solved tickets — used by ingestion pipeline
+  resolver_view: vw_ops_workitem_resolve         # Open tickets — used by resolver/polling
   batch_size: 1000
 
 qdrant:

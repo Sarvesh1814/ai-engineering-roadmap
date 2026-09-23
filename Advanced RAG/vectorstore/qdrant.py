@@ -132,8 +132,8 @@ class QdrantVectorStore:
                 ),
                 wait=True,
             )
-            self.logger.info(f"Deleted chunks for ticket {ticket_id}", extra={"metadata": {"ticket_id": ticket_id, "deleted_count": result.deleted_count}})
-            return result.deleted_count
+            self.logger.info(f"Deleted chunks for ticket {ticket_id}", extra={"metadata": {"ticket_id": ticket_id, "status": getattr(result, "status", "completed")}})
+            return 1
         except Exception as e:
             self.logger.error(f"Failed to delete chunks for ticket {ticket_id}", extra={"metadata": {"ticket_id": ticket_id, "error": str(e)}})
             raise

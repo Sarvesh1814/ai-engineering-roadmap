@@ -23,7 +23,7 @@ def run_polling(once: bool = False, interval: int = 60):
     """Poll for tickets with hasUpdates='Yes' and resolve them."""
     settings = get_settings()
     logger = get_logger("polling")
-    view_name = settings.mysql_view
+    view_name = settings.mysql_resolver_view
 
     logger.info("Starting ticket resolution polling", extra={
         "metadata": {

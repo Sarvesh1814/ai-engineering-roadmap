@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 from dataclasses import dataclass
 from typing import Any
 
@@ -157,9 +158,12 @@ class TicketAwareChunker:
     ) -> Chunk:
         """Create a chunk with deterministic ID."""
         content_hash = hashlib.sha256(text.encode()).hexdigest()[:12]
-        chunk_id = hashlib.sha256(
+        raw_hash = hashlib.sha256(
             f"{ticket_id}:{content_hash}:{chunk_index}".encode()
         ).hexdigest()
+        # Qdrant requires point IDs to be unsigned integers or UUIDs.
+        # Take the first 32 hex chars of the SHA-256 digest and format as UUID.
+        chunk_id = str(uuid.UUID(hex=raw_hash[:32]))
 
         metadata = {
             "ticket_id": ticket_id,

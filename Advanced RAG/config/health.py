@@ -42,7 +42,7 @@ class HealthChecker:
     def check_mysql(self) -> HealthStatus:
         try:
             from ingestion.mysql_loader import load_view
-            df_iter = load_view(self.settings.mysql_view, chunk_size=1)
+            df_iter = load_view(self.settings.mysql_ingestion_view, chunk_size=1)
             next(df_iter)
             return HealthStatus(
                 healthy=True,

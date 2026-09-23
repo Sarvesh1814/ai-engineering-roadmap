@@ -65,7 +65,7 @@ class IngestionPipeline:
             "failures": 0,
         }
 
-        view_name = get_settings().mysql_view
+        view_name = get_settings().mysql_ingestion_view
         batch_size = get_settings().mysql_batch_size
 
         if incremental and last_checkpoint:
