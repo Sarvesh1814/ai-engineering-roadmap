@@ -32,10 +32,10 @@ def get_engine():
     )
 
 
-def load_view(view_name: str | None = None, chunk_size: int | None = None):
+def load_view(view_name: str | None = None, chunk_size: int | None = None, batch_size: int | None = None):
     settings = get_settings()
     view = _validate_identifier(view_name or settings.mysql_ingestion_view)
-    size = chunk_size or settings.mysql_batch_size
+    size = chunk_size or batch_size or settings.mysql_batch_size
 
     query = f"SELECT * FROM `{view}`"
     engine = get_engine()

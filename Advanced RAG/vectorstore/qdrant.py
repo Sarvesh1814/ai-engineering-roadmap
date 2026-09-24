@@ -59,7 +59,28 @@ class QdrantVectorStore:
             )
             self.logger.info("Collection created", extra={"metadata": {"collection": self.collection_name}})
         else:
-            self.logger.info("Collection already exists", extra={"metadata": {"collection": self.collection_name}})
+            col_info = self.client.get_collection(self.collection_name)
+            existing_size = getattr(getattr(col_info.config.params, "vectors", None), "size", None)
+            if existing_size is not None and existing_size != self.vector_size:
+                if col_info.points_count == 0:
+                    self.logger.warning(
+                        f"Collection {self.collection_name} dimension mismatch (existing={existing_size}, configured={self.vector_size}) and empty. Recreating.",
+                        extra={"metadata": {"collection": self.collection_name, "existing_size": existing_size, "new_size": self.vector_size}},
+                    )
+                    self.client.delete_collection(self.collection_name)
+                    self.client.create_collection(
+                        collection_name=self.collection_name,
+                        vectors_config=VectorParams(
+                            size=self.vector_size,
+                            distance=self.distance,
+                        ),
+                    )
+                else:
+                    raise ValueError(
+                        f"Collection {self.collection_name} dimension {existing_size} mismatch with config {self.vector_size} ({col_info.points_count} points)"
+                    )
+            else:
+                self.logger.info("Collection already exists", extra={"metadata": {"collection": self.collection_name}})
 
         self._create_payload_indexes()
 
@@ -148,14 +169,25 @@ class QdrantVectorStore:
             raise RuntimeError("Not connected. Call connect() first.")
 
         try:
-            results = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=vector,
-                limit=top_k,
-                query_filter=filter_,
-                with_payload=True,
-                with_vectors=False,
-            )
+            if hasattr(self.client, "query_points"):
+                response = self.client.query_points(
+                    collection_name=self.collection_name,
+                    query=vector,
+                    limit=top_k,
+                    query_filter=filter_,
+                    with_payload=True,
+                    with_vectors=False,
+                )
+                results = response.points
+            else:
+                results = self.client.search(
+                    collection_name=self.collection_name,
+                    query_vector=vector,
+                    limit=top_k,
+                    query_filter=filter_,
+                    with_payload=True,
+                    with_vectors=False,
+                )
 
             return [
                 {

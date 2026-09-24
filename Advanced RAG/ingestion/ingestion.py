@@ -150,22 +150,6 @@ class IngestionPipeline:
                 or data.get("OH_last_update")
             )
 
-        # Comments fallback if comments field is empty or whitespace
-        comments = data.get("comments")
-        if not comments or not str(comments).strip():
-            parts = []
-            if data.get("title"):
-                parts.append(f"Title: {data.get('title')}")
-            if data.get("ticket_summary"):
-                parts.append(f"Summary: {data.get('ticket_summary')}")
-            if data.get("RCA"):
-                parts.append(f"Root Cause Analysis: {data.get('RCA')}")
-            if data.get("Resolution_Steps"):
-                parts.append(f"Resolution Steps: {data.get('Resolution_Steps')}")
-            if data.get("Close_Notes"):
-                parts.append(f"Close Notes: {data.get('Close_Notes')}")
-            if parts:
-                data["comments"] = "\n\n".join(parts)
 
         return data
 
@@ -181,18 +165,20 @@ class IngestionPipeline:
         knowledge = self.extractor.extract(ticket_data)
         knowledge_dict = knowledge.model_dump() if hasattr(knowledge, "model_dump") else knowledge.__dict__
 
-        # Fallback to direct DB fields if LLM extraction returned null for resolution/root cause
-        if not knowledge_dict.get("resolution"):
-            db_res = ticket_data.get("Resolution_Steps") or ticket_data.get("Close_Notes")
-            if db_res:
-                knowledge_dict["resolution"] = str(db_res)
-        if not knowledge_dict.get("root_cause"):
-            db_rca = ticket_data.get("RCA")
-            if db_rca:
-                knowledge_dict["root_cause"] = str(db_rca)
-
-        if not knowledge_dict.get("resolution") and not knowledge_dict.get("root_cause"):
-            self.logger.warning(f"Skipping ticket: no resolution or root cause", extra={"metadata": {"ticket_id": ticket_id}})
+        has_useful_knowledge = any([
+            knowledge_dict.get("problem"),
+            knowledge_dict.get("symptoms"),
+            knowledge_dict.get("investigation"),
+            knowledge_dict.get("resolution"),
+            knowledge_dict.get("root_cause"),
+            knowledge_dict.get("next_steps"),
+            knowledge_dict.get("technical_entities"),
+        ])
+        if not has_useful_knowledge:
+            self.logger.warning(
+                "Skipping ticket: LLM extracted no useful knowledge from comments",
+                extra={"metadata": {"ticket_id": ticket_id}},
+            )
             stats["tickets_skipped"] += 1
             return
 

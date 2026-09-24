@@ -8,15 +8,15 @@ mysql:
   database: servicenow
   user: root
   password: ""  # Set via MYSQL_PASSWORD env var
-  ingestion_view: vw_ops_workitem_ingestion  # Solved tickets — used by ingestion pipeline
-  resolver_view: vw_ops_workitem_resolve         # Open tickets — used by resolver/polling
+  ingestion_view: vw_workitem_ingestion  # Solved tickets — used by ingestion pipeline
+  resolver_view: vw_workitem_resolve         # Open tickets — used by resolver/polling
   batch_size: 1000
 
 qdrant:
   host: localhost
   port: 6333
   collection: AgenticRag
-  vector_size: 768
+  vector_size: 1024
   distance: COSINE
 
 embedding:
@@ -26,9 +26,9 @@ embedding:
   batch_size: 32
 
 llm:
-  provider: open-ai
+  provider: openai
   model_name: opshub-llm
-  base_url: http://10.13.27.249:4001/v1/chat/completions
+  base_url: http://10.13.27.249:4001/v1
   api_key: ""  # Set via LLM_API_KEY env var
   temperature: 0.1
 

@@ -63,11 +63,34 @@ class TicketKnowledgeExtractor:
             ticket_data: Dictionary with ticket fields including comments
 
         Returns:
-            TicketKnowledge object with extracted structured information
+            TicketKnowledge object with extracted structured information.
+            Returns an empty TicketKnowledge (all None/empty) when comments
+            cannot be extracted — callers should treat this as a skip.
+
+        Skip behaviour:
+            - comments is None (NULL in DB): genuinely absent, skip silently.
+            - comments is non-None but blank/whitespace: field was set but has
+              no content — log a warning (data quality issue) and skip.
+            - LLM call fails: log the error and skip.
         """
-        comments = ticket_data.get("comments", "")
-        if not comments or not comments.strip():
+        from config.logging import get_logger
+        logger = get_logger("ingestion.extractor")
+
+        comments_raw = ticket_data.get("comments")
+
+        if comments_raw is None:
+            # NULL in DB — genuinely no comment data, skip silently.
             return TicketKnowledge()
+
+        if not str(comments_raw).strip():
+            # Field exists in DB but is blank/whitespace — data quality issue.
+            logger.warning(
+                "Skipping ticket: comments field is set but empty/whitespace",
+                extra={"metadata": {"ticket_id": ticket_data.get("ticket_id", "unknown")}},
+            )
+            return TicketKnowledge()
+
+        comments = str(comments_raw).strip()
 
         try:
             result = self.chain.invoke({
@@ -84,7 +107,15 @@ class TicketKnowledgeExtractor:
                 "comments": comments,
             })
             return TicketKnowledge(**result)
-        except Exception:
+        except Exception as e:
+            logger.warning(
+                "LLM extraction failed, skipping ticket",
+                extra={"metadata": {
+                    "ticket_id": ticket_data.get("ticket_id", "unknown"),
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                }},
+            )
             return TicketKnowledge()
 
 

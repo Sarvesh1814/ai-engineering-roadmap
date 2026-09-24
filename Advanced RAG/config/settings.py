@@ -144,7 +144,7 @@ class Settings:
         self.llm_provider = llm.get("provider", self.llm_provider)
         self.llm_model_name = llm.get("model_name", self.llm_model_name)
         self.llm_base_url = llm.get("base_url", self.llm_base_url)
-        self.llm_api_key = llm.get("api_key", self.llm_api_key) or os.getenv("API_KEY", "")
+        self.llm_api_key = llm.get("api_key", self.llm_api_key) or os.getenv("LLM_API_KEY", "") or os.getenv("API_KEY", "")
         self.llm_temperature = llm.get("temperature", self.llm_temperature)
 
         reranker = config.get("reranker", {})

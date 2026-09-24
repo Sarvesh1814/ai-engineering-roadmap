@@ -31,7 +31,7 @@ system: |
   Output format: reason first, then extract. Return ONLY this JSON object —
   no markdown fences, no text before or after it:
 
-  {
+  {{
     "extraction_reasoning": "1-2 sentences: which comment(s) support root_cause and resolution, or why they're null",
     "problem": "string",
     "symptoms": ["string", ...],
@@ -41,7 +41,7 @@ system: |
     "resolution_confirmed": true | false,
     "next_steps": ["string", ...],
     "technical_entities": ["string", ...]
-  }
+  }}
 
 human: |
   Ticket ID: {ticket_id}
